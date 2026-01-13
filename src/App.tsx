@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 const API_KEY = '92b0cd20cf7e4d5fa490de152ac6b3cb';
