@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
 const API_KEY = '92b0cd20cf7e4d5fa490de152ac6b3cb';
@@ -6,6 +6,9 @@ const API_KEY = '92b0cd20cf7e4d5fa490de152ac6b3cb';
 export default function App() {
   const [ingredient, setIngredient] = useState('');
   const [recipes, setRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null); // Add state for the selected recipe
+  const [recipeDetails, setRecipeDetails] = useState(null);
+  const [activeTab, setActiveTab] = useState('ingredients'); // New state for active tab
 
   const handleCookClick = async () => {
     if (!ingredient) return;
@@ -28,10 +31,20 @@ export default function App() {
     alert(`Show steps for recipe ${id}`);
   };
 
+  useEffect(() => {
+    if (selectedRecipe) {
+      fetch(`https://api.spoonacular.com/recipes/${selectedRecipe.id}/information?apiKey=${API_KEY}`)
+        .then(res => res.json())
+        .then(data => setRecipeDetails(data));
+    } else {
+      setRecipeDetails(null);
+    }
+  }, [selectedRecipe]);
+
   return (
     <div className="App">
-      <h1>Recipe Generator</h1>
-      <div>Search Bar
+      
+      
         <div className="Search-Bar">
           <input
             type="text"
@@ -40,7 +53,7 @@ export default function App() {
             onChange={e => setIngredient(e.target.value)}
           />
         </div>
-      </div>
+      
 
       <div className="Buttons">
         <div className="Search-Bar-Button">
@@ -59,7 +72,12 @@ export default function App() {
           <div>
             <ul id="recipe-Cards">
               {recipes.map((recipe) => (
-                <li key={recipe.id} className="recipe-card">
+                <li
+                  key={recipe.id}
+                  className="recipe-card"
+                  onClick={() => setSelectedRecipe(recipe)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <h3>{recipe.title}</h3>
                   {recipe.image && (
                     <img
@@ -79,7 +97,88 @@ export default function App() {
           </div>
         )}
       </div>
-    </div> 
+
+      {selectedRecipe && recipeDetails && (
+        <div className="side-panel">
+          <h2>{selectedRecipe.title}</h2>
+          <img
+            src={selectedRecipe.image}
+            alt={selectedRecipe.title}
+            width={300}
+            style={{ borderRadius: '16px', marginBottom: '16px' }}
+          />
+          <h3>Calories</h3>
+          <p>
+            {
+              recipeDetails.nutrition?.nutrients?.find(
+                n => n.name === "Calories" || n.name === "Energy"
+              )?.amount ?? "N/A"
+            } kcal
+          </p>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+            <button
+              style={{
+                background: activeTab === 'ingredients' ? '#4caf50' : '#eee',
+                color: activeTab === 'ingredients' ? '#fff' : '#333',
+                borderRadius: '8px',
+                border: 'none',
+                padding: '8px 16px',
+                cursor: 'pointer'
+              }}
+              onClick={() => setActiveTab('ingredients')}
+            >
+              Ingredients
+            </button>
+            <button
+              style={{
+                background: activeTab === 'steps' ? '#4caf50' : '#eee',
+                color: activeTab === 'steps' ? '#fff' : '#333',
+                borderRadius: '8px',
+                border: 'none',
+                padding: '8px 16px',
+                cursor: 'pointer'
+              }}
+              onClick={() => setActiveTab('steps')}
+            >
+              Steps
+            </button>
+          </div>
+          {activeTab === 'ingredients' && (
+            <>
+              <h3>Ingredients</h3>
+              <ul>
+                {recipeDetails.extendedIngredients?.map(ingredient => (
+                  <li key={ingredient.id}>{ingredient.original}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {activeTab === 'steps' && (
+            <>
+              <h3>Steps</h3>
+              <ol>
+                {recipeDetails.analyzedInstructions?.[0]?.steps?.map(step => (
+                  <li key={step.number}>{step.step}</li>
+                ))}
+              </ol>
+            </>
+          )}
+          <button 
+            onClick={() =>
+              window.open(
+                `https://spoonacular.com/recipes/${selectedRecipe.title.replace(/ /g, "-")}-${selectedRecipe.id}`
+              )
+            }
+          >
+            View Full Recipe
+          </button>
+          <button id="CloseRecipe-Button" onClick={() => setSelectedRecipe(null)}>
+            Close
+          </button>
+        </div>
+      )}
+    </div>
+    </div>
   );
 }
 
