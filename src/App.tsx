@@ -3,12 +3,37 @@ import './App.css';
 
 const API_KEY = '92b0cd20cf7e4d5fa490de152ac6b3cb';
 
+interface Recipe {
+  id: number;
+  title: string;
+  image: string;
+}
+
+interface RecipeDetails {
+  nutrition?: {
+    nutrients?: Array<{
+      name: string;
+      amount: number;
+    }>;
+  };
+  extendedIngredients?: Array<{
+    id: number;
+    original: string;
+  }>;
+  analyzedInstructions?: Array<{
+    steps?: Array<{
+      number: number;
+      step: string;
+    }>;
+  }>;
+}
+
 export default function App() {
   const [ingredient, setIngredient] = useState('');
-  const [recipes, setRecipes] = useState([]);
-  const [selectedRecipe, setSelectedRecipe] = useState(null); // Add state for the selected recipe
-  const [recipeDetails, setRecipeDetails] = useState(null);
-  const [activeTab, setActiveTab] = useState('ingredients'); // New state for active tab
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [recipeDetails, setRecipeDetails] = useState<RecipeDetails | null>(null);
+  const [activeTab, setActiveTab] = useState('ingredients');
 
   const handleCookClick = async () => {
     if (!ingredient) return;
@@ -23,11 +48,11 @@ export default function App() {
   };
 
   // Add these handlers to avoid errors
-  const handleShowIngredients = (id) => {
+  const handleShowIngredients = (id: number) => {
     alert(`Show ingredients for recipe ${id}`);
   };
 
-  const handleShowSteps = (id) => {
+  const handleShowSteps = (id: number) => {
     alert(`Show steps for recipe ${id}`);
   };
 
@@ -178,10 +203,8 @@ export default function App() {
         </div>
       )}
     </div>
-    
-  
-  );}
-
+  );
+}
 
 
 
